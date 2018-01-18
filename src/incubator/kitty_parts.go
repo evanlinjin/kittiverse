@@ -1,9 +1,5 @@
 package incubator
 
-import (
-	"sync"
-)
-
 type KittyPart int
 
 func (kp KittyPart) Specs() *KittyPartSpecs {
@@ -34,7 +30,6 @@ func (kps *KittyPartSpecs) FieldName() string  { return kps.fieldName }
 func (kps *KittyPartSpecs) IsAccessory() bool  { return kps.accessory }
 
 var (
-	kittyPartsByName sync.Map
 	kittyParts       = [...]*KittyPartSpecs{
 		Body:   {"body", "Body", false},
 		Brows:  {"brows", "Brows", false},

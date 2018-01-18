@@ -14,8 +14,6 @@ const (
 
 var (
 	ErrReturn    = errors.New("returned action, no error")
-	ErrAccessory = errors.New("is accessory")
-	ErrDNAPart   = errors.New("is dna part")
 
 	rootDir    = "/home/evan/skycoin/ivan/kittycash/Kitties"
 	rootDirMux sync.RWMutex
@@ -39,11 +37,5 @@ func SetRootDir(path string) error {
 		return e
 	} else {
 		return nil
-	}
-}
-
-func init() {
-	for _, part := range kittyParts {
-		kittyPartsByName.Store(part.folderName, part)
 	}
 }
