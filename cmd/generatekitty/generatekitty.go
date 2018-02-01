@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/kittycash/kittiverse/src/incubator"
 	"gopkg.in/urfave/cli.v1"
-	"os"
 	"log"
+	"os"
 )
 
 var (
@@ -18,9 +18,9 @@ func main() {
 	app.Usage = "generates kitties"
 	app.Flags = cli.FlagsByName{
 		cli.StringFlag{
-			Name: "images-dir, i",
-			Usage: "directory where we store all the modular image files",
-			Value: ImagesDir,
+			Name:        "images-dir, i",
+			Usage:       "directory where we store all the modular image files",
+			Value:       ImagesDir,
 			Destination: &ImagesDir,
 		},
 	}
@@ -36,17 +36,17 @@ func run(_ *cli.Context) error {
 	}
 	config := &incubator.KittyGenSpecs{
 		Version: 0,
-		DNA:     incubator.DNAGenSpecs{
-			Group: 0,
-			Color: 38,
+		DNA: incubator.DNAGenSpecs{
+			Group:   0,
+			Color:   38,
 			Pattern: 3,
-			Body: 0,
-			Brows: -1,
-			Ears: 0,
-			Eyes: 0,
-			Head: 0,
-			Nose: 2,
-			Tail: 1,
+			Body:    0,
+			Brows:   -1,
+			Ears:    0,
+			Eyes:    0,
+			Head:    0,
+			Nose:    2,
+			Tail:    1,
 		},
 		Accessories: incubator.AccessoriesGenSpecs{
 			Collar: &incubator.ItemGenSpecs{

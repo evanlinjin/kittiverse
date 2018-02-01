@@ -13,7 +13,7 @@ const (
 )
 
 var (
-	ErrReturn    = errors.New("returned action, no error")
+	ErrReturn = errors.New("returned action, no error")
 
 	rootDir    = "/home/evan/skycoin/ivan/kittycash/Kitties"
 	rootDirMux sync.RWMutex

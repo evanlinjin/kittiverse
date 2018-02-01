@@ -30,7 +30,7 @@ func (kps *KittyPartSpecs) FieldName() string  { return kps.fieldName }
 func (kps *KittyPartSpecs) IsAccessory() bool  { return kps.accessory }
 
 var (
-	kittyParts       = [...]*KittyPartSpecs{
+	kittyParts = [...]*KittyPartSpecs{
 		Body:   {"body", "Body", false},
 		Brows:  {"brows", "Brows", false},
 		Cap:    {"cap", "Cap", true},
