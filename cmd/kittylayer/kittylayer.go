@@ -2,7 +2,7 @@ package main
 
 import (
 	"gopkg.in/urfave/cli.v1"
-	"github.com/kittycash/kittiverse/src/tools/layer"
+	"github.com/kittycash/kittiverse/src/imager/layer"
 	"image/png"
 	"os"
 	"errors"

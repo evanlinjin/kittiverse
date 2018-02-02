@@ -4,7 +4,7 @@ import (
 	"image"
 	"image/draw"
 	"math"
-	"github.com/kittycash/kittiverse/src/tools/layer/graphics-go/graphics"
+	"github.com/kittycash/kittiverse/src/imager/layer/graphics-go/graphics"
 )
 
 // Rotate rotates an image while keeping all the pixels of the original image.
