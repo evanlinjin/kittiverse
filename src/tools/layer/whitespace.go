@@ -48,9 +48,6 @@ func IncludeWhitespace(src image.Image, bounds image.Rectangle, at *Placement) (
 	var (
 		dst = image.NewRGBA(bounds)
 		e error
-		srcBound = src.Bounds()
-		spX = int(at.CoordX) - getRectWidth(srcBound)
-		spY = int(at.CoordY) - getRectHeight(srcBound)
 	)
 
 	if src, e = Scale(src, at.ScaleX, at.ScaleY); e != nil {
@@ -61,7 +58,12 @@ func IncludeWhitespace(src image.Image, bounds image.Rectangle, at *Placement) (
 		return nil, e
 	}
 
-	draw.Draw(dst, bounds, src, image.Pt(spX, spY), draw.Src)
+	var (
+		srcBound = src.Bounds()
+		spX = int(at.CoordX) - getRectWidth(srcBound)/2
+		spY = int(at.CoordY) - getRectHeight(srcBound)/2
+	)
+	draw.Draw(dst, bounds, src, image.Pt(-spX, -spY), draw.Src)
 
 	return dst, nil
 }

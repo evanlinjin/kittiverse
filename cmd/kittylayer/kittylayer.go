@@ -10,6 +10,7 @@ import (
 	"log"
 	"image"
 	"encoding/json"
+	"io/ioutil"
 )
 
 func main() {
@@ -61,7 +62,7 @@ func main() {
 		},
 		cli.Command{
 			Name: "remove_whitespace",
-			Usage: "Removes whitespace of image and spits into smaller image and config file",
+			Usage: "removes whitespace of image and spits into smaller image and config file",
 			Flags: cli.FlagsByName{
 				cli.StringFlag{
 					Name: "source, s",
@@ -73,6 +74,31 @@ func main() {
 				},
 			},
 			Action: cli.ActionFunc(removeWhitespace),
+		},
+		cli.Command{
+			Name: "include_whitespace",
+			Usage: "adds whitespace to an image with associated config file",
+			Flags: cli.FlagsByName{
+				cli.StringFlag{
+					Name: "source, s",
+					Usage: "image source",
+				},
+				cli.StringFlag{
+					Name: "destination, d",
+					Usage: "image destination",
+				},
+				cli.IntFlag{
+					Name:  "width, x",
+					Usage: "width of destination image in pixels",
+					Value: 1200,
+				},
+				cli.IntFlag{
+					Name:  "height, y",
+					Usage: "height of destination image in pixels",
+					Value: 1200,
+				},
+			},
+			Action: cli.ActionFunc(includeWhitespace),
 		},
 	}
 	if e := app.Run(os.Args); e != nil {
@@ -152,11 +178,49 @@ func removeWhitespace(ctx *cli.Context) error {
 	})
 }
 
+func includeWhitespace(ctx *cli.Context) error {
+	var (
+		srcName = ctx.String("source")
+		dstName = ctx.String("destination")
+		dstWidth = ctx.Int("width")
+		dstHeight = ctx.Int("height")
+		placement = new(layer.Placement)
+	)
+
+	src, e := openImage(srcName, func(fn string) error {
+		fn = strings.TrimSuffix(fn, ".png") + ".json"
+
+		data, e := ioutil.ReadFile(fn)
+		if e != nil {
+			return e
+		}
+
+		return json.Unmarshal(data, placement)
+	})
+	if e != nil {
+		return e
+	}
+
+	dstBounds := image.Rect(0, 0, dstWidth, dstHeight)
+	dst, e := layer.IncludeWhitespace(src, dstBounds, placement)
+	if e != nil {
+		return e
+	}
+
+	return createImage(dstName, dst)
+}
+
 /*
 	<<< HELPER FUNCTIONS >>>
 */
 
-func openImage(srcName string) (image.Image, error) {
+func openImage(srcName string, fnActions ...fnAction) (image.Image, error) {
+	for _, action := range fnActions {
+		if e := action(srcName); e != nil {
+			return nil, e
+		}
+	}
+
 	sf, e := os.Open(srcName)
 	if e != nil {
 		return nil, errors.New("failed to open source: " + e.Error())
@@ -167,6 +231,7 @@ func openImage(srcName string) (image.Image, error) {
 	if e != nil {
 		return nil, errors.New("failed to decode source: " + e.Error())
 	}
+
 	return src, nil
 }
 
