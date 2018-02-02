@@ -38,5 +38,3 @@ func Rotate(src image.Image, radians float64) (draw.Image, error) {
 	e := graphics.Rotate(dst, src, &graphics.RotateOptions{Angle: radians})
 	return dst, e
 }
-
-

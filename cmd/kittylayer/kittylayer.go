@@ -9,6 +9,7 @@ import (
 	"strings"
 	"log"
 	"image"
+	"encoding/json"
 )
 
 func main() {
@@ -58,6 +59,21 @@ func main() {
 			},
 			Action: cli.ActionFunc(scale),
 		},
+		cli.Command{
+			Name: "remove_whitespace",
+			Usage: "Removes whitespace of image and spits into smaller image and config file",
+			Flags: cli.FlagsByName{
+				cli.StringFlag{
+					Name: "source, s",
+					Usage: "image source",
+				},
+				cli.StringFlag{
+					Name: "destination, d",
+					Usage: "image destination",
+				},
+			},
+			Action: cli.ActionFunc(removeWhitespace),
+		},
 	}
 	if e := app.Run(os.Args); e != nil {
 		log.Println(e)
@@ -105,6 +121,37 @@ func scale(ctx *cli.Context) error {
 	return createImage(dstName, dst)
 }
 
+func removeWhitespace(ctx *cli.Context) error {
+	var (
+		srcName = ctx.String("source")
+		dstName = ctx.String("destination")
+	)
+
+	src, e := openImage(srcName)
+	if e != nil {
+		return e
+	}
+
+	dst, dstConfig := layer.RemoveWhitespace(src)
+
+	return createImage(dstName, dst, func(fn string) error {
+		cName := strings.TrimSuffix(fn, ".png") + ".json"
+
+		cData, e := json.MarshalIndent(dstConfig, "", "    ")
+		if e != nil {
+			return e
+		}
+
+		cf, e := os.Create(cName)
+		if e != nil {
+			return e
+		}
+
+		_, e = cf.Write(cData)
+		return e
+	})
+}
+
 /*
 	<<< HELPER FUNCTIONS >>>
 */
@@ -123,7 +170,9 @@ func openImage(srcName string) (image.Image, error) {
 	return src, nil
 }
 
-func createImage(dstName string, dst image.Image) error {
+type fnAction func(fn string) error
+
+func createImage(dstName string, dst image.Image, fnActions ...fnAction) error {
 	if strings.HasSuffix(dstName, ".png") == false {
 		dstName += ".png"
 	}
@@ -131,6 +180,12 @@ func createImage(dstName string, dst image.Image) error {
 	df, e := os.Create(dstName)
 	if e != nil {
 		return errors.New("failed to create image: " + e.Error())
+	}
+
+	for _, action := range fnActions {
+		if e := action(dstName); e != nil {
+			return e
+		}
 	}
 
 	return png.Encode(df, dst)
