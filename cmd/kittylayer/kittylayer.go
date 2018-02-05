@@ -1,16 +1,16 @@
 package main
 
 import (
-	"gopkg.in/urfave/cli.v1"
-	"github.com/kittycash/kittiverse/src/imager/layer"
-	"image/png"
-	"os"
-	"errors"
-	"strings"
-	"log"
-	"image"
 	"encoding/json"
+	"errors"
+	"github.com/kittycash/kittiverse/src/imager/layer"
+	"gopkg.in/urfave/cli.v1"
+	"image"
+	"image/png"
 	"io/ioutil"
+	"log"
+	"os"
+	"strings"
 )
 
 func main() {
@@ -19,72 +19,72 @@ func main() {
 	app.Usage = "tools for modifying and managing kitty layers"
 	app.Commands = cli.Commands{
 		cli.Command{
-			Name: "rotate",
+			Name:  "rotate",
 			Usage: "rotates a layer",
 			Flags: cli.FlagsByName{
 				cli.StringFlag{
-					Name: "source, s",
+					Name:  "source, s",
 					Usage: "image source",
 				},
 				cli.StringFlag{
-					Name: "destination, d",
+					Name:  "destination, d",
 					Usage: "image destination",
 				},
 				cli.Float64Flag{
-					Name: "angle, a",
+					Name:  "angle, a",
 					Usage: "angle in clockwise radians of rotation",
 				},
 			},
 			Action: cli.ActionFunc(rotate),
 		},
 		cli.Command{
-			Name: "scale",
+			Name:  "scale",
 			Usage: "scales a layer by multiplication x & y",
 			Flags: cli.FlagsByName{
 				cli.StringFlag{
-					Name: "source, s",
+					Name:  "source, s",
 					Usage: "image source",
 				},
 				cli.StringFlag{
-					Name: "destination, d",
+					Name:  "destination, d",
 					Usage: "image destination",
 				},
 				cli.Float64Flag{
-					Name: "scaleX, x",
+					Name:  "scaleX, x",
 					Usage: "factor of scale in x direction",
 				},
 				cli.Float64Flag{
-					Name: "scaleY, y",
+					Name:  "scaleY, y",
 					Usage: "factor of scale in y direction",
 				},
 			},
 			Action: cli.ActionFunc(scale),
 		},
 		cli.Command{
-			Name: "remove_whitespace",
+			Name:  "remove_whitespace",
 			Usage: "removes whitespace of image and spits into smaller image and config file",
 			Flags: cli.FlagsByName{
 				cli.StringFlag{
-					Name: "source, s",
+					Name:  "source, s",
 					Usage: "image source",
 				},
 				cli.StringFlag{
-					Name: "destination, d",
+					Name:  "destination, d",
 					Usage: "image destination",
 				},
 			},
 			Action: cli.ActionFunc(removeWhitespace),
 		},
 		cli.Command{
-			Name: "include_whitespace",
+			Name:  "include_whitespace",
 			Usage: "adds whitespace to an image with associated config file",
 			Flags: cli.FlagsByName{
 				cli.StringFlag{
-					Name: "source, s",
+					Name:  "source, s",
 					Usage: "image source",
 				},
 				cli.StringFlag{
-					Name: "destination, d",
+					Name:  "destination, d",
 					Usage: "image destination",
 				},
 				cli.IntFlag{
@@ -180,9 +180,9 @@ func removeWhitespace(ctx *cli.Context) error {
 
 func includeWhitespace(ctx *cli.Context) error {
 	var (
-		srcName = ctx.String("source")
-		dstName = ctx.String("destination")
-		dstWidth = ctx.Int("width")
+		srcName   = ctx.String("source")
+		dstName   = ctx.String("destination")
+		dstWidth  = ctx.Int("width")
 		dstHeight = ctx.Int("height")
 		placement = new(layer.Placement)
 	)

@@ -36,8 +36,8 @@ func RemoveWhitespace(src image.Image) (image.Image, *Placement) {
 	draw.Draw(dst, dst.Bounds(), src, image.Pt(minX, minY), draw.Over)
 
 	return dst, &Placement{
-		CoordX: uint64((minX+maxX)/2),
-		CoordY: uint64((minY+maxY)/2),
+		CoordX: uint64((minX + maxX) / 2),
+		CoordY: uint64((minY + maxY) / 2),
 		ScaleX: 1,
 		ScaleY: 1,
 		Rotate: 0,
@@ -47,7 +47,7 @@ func RemoveWhitespace(src image.Image) (image.Image, *Placement) {
 func IncludeWhitespace(src image.Image, bounds image.Rectangle, at *Placement) (image.Image, error) {
 	var (
 		dst = image.NewRGBA(bounds)
-		e error
+		e   error
 	)
 
 	if src, e = Scale(src, at.ScaleX, at.ScaleY); e != nil {
@@ -60,8 +60,8 @@ func IncludeWhitespace(src image.Image, bounds image.Rectangle, at *Placement) (
 
 	var (
 		srcBound = src.Bounds()
-		spX = int(at.CoordX) - getRectWidth(srcBound)/2
-		spY = int(at.CoordY) - getRectHeight(srcBound)/2
+		spX      = int(at.CoordX) - getRectWidth(srcBound)/2
+		spY      = int(at.CoordY) - getRectHeight(srcBound)/2
 	)
 	draw.Draw(dst, bounds, src, image.Pt(-spX, -spY), draw.Src)
 

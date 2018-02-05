@@ -1,10 +1,10 @@
 package layer
 
 import (
+	"github.com/kittycash/kittiverse/src/imager/layer/graphics-go/graphics"
 	"image"
 	"image/draw"
 	"math"
-	"github.com/kittycash/kittiverse/src/imager/layer/graphics-go/graphics"
 )
 
 // Rotate rotates an image while keeping all the pixels of the original image.
@@ -12,13 +12,13 @@ func Rotate(src image.Image, radians float64) (draw.Image, error) {
 
 	// Fixes.
 
-	radians = math.Mod(radians, math.Pi * 2)
+	radians = math.Mod(radians, math.Pi*2)
 
 	// Find destination size.
 
 	srcBounds := src.Bounds()
-	srcX      := float64(getRectWidth(srcBounds))/2
-	srcY      := float64(getRectHeight(srcBounds))/2
+	srcX := float64(getRectWidth(srcBounds)) / 2
+	srcY := float64(getRectHeight(srcBounds)) / 2
 
 	z := math.Sqrt(math.Pow(srcX, 2) + math.Pow(srcY, 2))
 
@@ -29,8 +29,8 @@ func Rotate(src image.Image, radians float64) (draw.Image, error) {
 		angle = -radians
 	}
 
-	dstY := z * math.Sin(math.Atan(srcY/srcX) + angle)
-	dstX := z * math.Sin(math.Atan(srcX/srcY) + angle)
+	dstY := z * math.Sin(math.Atan(srcY/srcX)+angle)
+	dstX := z * math.Sin(math.Atan(srcX/srcY)+angle)
 
 	// Create destination image.
 

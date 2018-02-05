@@ -5,8 +5,8 @@
 package graphics
 
 import (
-	"github.com/kittycash/kittiverse/src/imager/layer/graphics-go/graphics/interp"
 	"errors"
+	"github.com/kittycash/kittiverse/src/imager/layer/graphics-go/graphics/interp"
 	"image"
 	"image/draw"
 	"math"

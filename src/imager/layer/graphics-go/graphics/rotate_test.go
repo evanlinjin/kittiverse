@@ -9,8 +9,8 @@ import (
 	"math"
 	"testing"
 
-	_ "image/png"
 	"github.com/kittycash/kittiverse/src/imager/layer/graphics-go/graphics/graphicstest"
+	_ "image/png"
 )
 
 var rotateOneColorTests = []transformOneColorTest{

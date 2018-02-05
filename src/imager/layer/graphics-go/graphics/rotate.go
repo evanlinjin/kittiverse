@@ -6,9 +6,9 @@ package graphics
 
 import (
 	"errors"
+	"github.com/kittycash/kittiverse/src/imager/layer/graphics-go/graphics/interp"
 	"image"
 	"image/draw"
-	"github.com/kittycash/kittiverse/src/imager/layer/graphics-go/graphics/interp"
 )
 
 // RotateOptions are the rotation parameters.
