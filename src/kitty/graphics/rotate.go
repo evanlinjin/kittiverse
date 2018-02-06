@@ -1,7 +1,7 @@
 package layer
 
 import (
-	"github.com/kittycash/kittiverse/src/imager/layer/graphics-go/graphics"
+	"github.com/kittycash/kittiverse/src/kitty/graphics/graphics-go/graphics"
 	"image"
 	"image/draw"
 	"math"

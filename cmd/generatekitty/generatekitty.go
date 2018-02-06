@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/kittycash/kittiverse/src/incubator"
+	"github.com/kittycash/kittiverse/src/oldincubator"
 	"gopkg.in/urfave/cli.v1"
 	"log"
 	"os"
@@ -31,12 +31,12 @@ func main() {
 }
 
 func run(_ *cli.Context) error {
-	if e := incubator.SetRootDir(ImagesDir); e != nil {
+	if e := oldincubator.SetRootDir(ImagesDir); e != nil {
 		return e
 	}
-	config := &incubator.KittyGenSpecs{
+	config := &oldincubator.KittyGenSpecs{
 		Version: 0,
-		DNA: incubator.DNAGenSpecs{
+		DNA: oldincubator.DNAGenSpecs{
 			Group:   0,
 			Color:   38,
 			Pattern: 3,
@@ -48,14 +48,14 @@ func run(_ *cli.Context) error {
 			Nose:    2,
 			Tail:    1,
 		},
-		Accessories: incubator.AccessoriesGenSpecs{
-			Collar: &incubator.ItemGenSpecs{
+		Accessories: oldincubator.AccessoriesGenSpecs{
+			Collar: &oldincubator.ItemGenSpecs{
 				ID:    0,
 				Color: 13,
 			},
 		},
 	}
-	_, e := incubator.GenerateKitty(config, true, "kitty.png")
+	_, e := oldincubator.GenerateKitty(config, true, "kitty.png")
 	if e != nil {
 		return e
 	}

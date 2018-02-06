@@ -9,7 +9,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/kittycash/kittiverse/src/imager/layer/graphics-go/graphics/graphicstest"
+	"github.com/kittycash/kittiverse/src/kitty/graphics/graphics-go/graphics/graphicstest"
 	_ "image/png"
 )
 

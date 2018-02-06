@@ -1,4 +1,4 @@
-package kitty
+package genetics
 
 const (
 	GenotypeLen = 6

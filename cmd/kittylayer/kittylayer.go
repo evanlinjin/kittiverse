@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"github.com/kittycash/kittiverse/src/imager/layer"
+	"github.com/kittycash/kittiverse/src/kitty/graphics"
 	"gopkg.in/urfave/cli.v1"
 	"image"
 	"image/png"
