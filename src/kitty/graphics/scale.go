@@ -1,9 +1,9 @@
 package layer
 
 import (
-	"github.com/kittycash/kittiverse/src/kitty/graphics/graphics-go/graphics"
 	"image"
 	"image/draw"
+	"github.com/BurntSushi/graphics-go/graphics"
 )
 
 func Scale(src image.Image, scaleX, scaleY float64) (draw.Image, error) {
