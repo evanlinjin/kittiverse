@@ -5,6 +5,10 @@ import "encoding/hex"
 // DNAPos specifies a position in the kitty DNA.
 type DNAPos int
 
+func (p DNAPos) String() string {
+	return dnaStringArray[p]
+}
+
 const (
 	DNAVersionPos     DNAPos = iota
 	DNABreedPos              = iota*6 - 5
@@ -19,8 +23,24 @@ const (
 	DNATailAttrPos           = iota*6 - 5
 	DNAReservedAPos          = iota*6 - 5
 	DNAReservedBPos          = iota*6 - 5
-	DNALen                   = iota*6 - 5
+	DNALen int               = iota*6 - 5
 )
+
+var dnaStringArray = [...]string{
+	DNAVersionPos:     "version",
+	DNABreedPos:       "breed",
+	DNABodyAttrPos:    "body",
+	DNABodyColorAPos:  "bodyColorA",
+	DNABodyColorBPos:  "bodyColorB",
+	DNABodyPatternPos: "bodyPattern",
+	DNAEarsAttrPos:    "ears",
+	DNAEyesAttrPos:    "eyes",
+	DNAEyesColorPos:   "eyesColor",
+	DNANoseAttrPos:    "nose",
+	DNATailAttrPos:    "tail",
+	DNAReservedAPos:   "",
+	DNAReservedBPos:   "",
+}
 
 // DNA represents a kitty's DNA and contains the genotypes of the kitty.
 // A kittycash genotype is made up of 3 alleles (not 2 like real biology).
@@ -61,7 +81,7 @@ func (d *DNA) Set(b []byte) error {
 }
 
 func (d DNA) GetGenotype(pos DNAPos) Genotype {
-	return d[pos:pos+GenotypeLen]
+	return d[pos : pos+GenotypeLen]
 }
 
 func (d DNA) GetPhenotype(pos DNAPos) (a Allele) {

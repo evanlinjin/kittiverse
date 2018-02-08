@@ -1,10 +1,10 @@
 package layer
 
 import (
+	"github.com/BurntSushi/graphics-go/graphics"
 	"image"
 	"image/draw"
 	"math"
-	"github.com/BurntSushi/graphics-go/graphics"
 )
 
 // Rotate rotates an image while keeping all the pixels of the original image.
