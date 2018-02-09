@@ -7,8 +7,8 @@ import (
 	"github.com/skycoin/skycoin/src/cipher"
 	"image"
 	"image/png"
-	"os"
 	"io/ioutil"
+	"os"
 )
 
 const (

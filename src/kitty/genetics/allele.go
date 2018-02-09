@@ -2,8 +2,8 @@ package genetics
 
 import (
 	"encoding/hex"
-	"errors"
 	"encoding/json"
+	"errors"
 )
 
 const (
@@ -70,16 +70,16 @@ type AlleleRange struct {
 }
 
 type AlleleRanges struct {
-	Breed         AlleleRange
-	BodyAttribute AlleleRange
-	BodyColorA    AlleleRange
-	BodyColorB    AlleleRange
-	BodyPattern   AlleleRange
-	EarsAttribute AlleleRange
-	EyesAttribute AlleleRange
-	EyesColor     AlleleRange
-	NoseAttribute AlleleRange
-	TailAttribute AlleleRange
+	Breed         AlleleRange `json:"breed"`
+	BodyAttribute AlleleRange `json:"body_attribute"`
+	BodyColorA    AlleleRange `json:"body_color_a"`
+	BodyColorB    AlleleRange `json:"body_color_b"`
+	BodyPattern   AlleleRange `json:"body_pattern"`
+	EarsAttribute AlleleRange `json:"ears_attribute"`
+	EyesAttribute AlleleRange `json:"eyes_attribute"`
+	EyesColor     AlleleRange `json:"eyes_color"`
+	NoseAttribute AlleleRange `json:"nose_attribute"`
+	TailAttribute AlleleRange `json:"tail_attribute"`
 }
 
 func (r *AlleleRanges) String(pretty bool) string {

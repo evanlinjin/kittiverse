@@ -21,7 +21,7 @@ type Layers struct {
 	LayerTypes       []LayersOfType
 	Breeds           []string
 	layerTypesByName map[string]int `enc:"-"`
-	breedsByName     map[string]int      `enc:"-"`
+	breedsByName     map[string]int `enc:"-"`
 }
 
 func NewLayersContainer() *Layers {
@@ -149,7 +149,7 @@ func (lc *Layers) addLayerType(ltName string) error {
 		layersByKey:      make(map[attributeKey]int),
 		attributesByName: make(map[string]int),
 	})
-	lc.layerTypesByName[ltName] = len(lc.LayerTypes)-1
+	lc.layerTypesByName[ltName] = len(lc.LayerTypes) - 1
 	return nil
 }
 
@@ -290,7 +290,7 @@ type LayersOfType struct {
 	Layers           []Layer
 	Attributes       []string
 	layersByKey      map[attributeKey]int `enc:"-"` // aka, by attribute and breed
-	attributesByName map[string]int     `enc:"-"`
+	attributesByName map[string]int       `enc:"-"`
 }
 
 func (lt *LayersOfType) Init() {
@@ -310,7 +310,7 @@ func (lt *LayersOfType) getOrAddLayer(layer Layer) *Layer {
 		return &lt.Layers[i]
 	} else {
 		lt.Layers = append(lt.Layers, layer)
-		i = len(lt.Layers)-1
+		i = len(lt.Layers) - 1
 		lt.layersByKey[key] = i
 		return &lt.Layers[i]
 	}
@@ -321,7 +321,7 @@ func (lt *LayersOfType) addAttribute(attrName string) error {
 		return common.ErrAlreadyExists
 	}
 	lt.Attributes = append(lt.Attributes, attrName)
-	lt.attributesByName[attrName] = len(lt.Attributes)-1
+	lt.attributesByName[attrName] = len(lt.Attributes) - 1
 	return nil
 }
 
