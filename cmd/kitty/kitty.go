@@ -217,6 +217,7 @@ func init() {
 						if e := gen.Compile(ctx.String("dir")); e != nil {
 							return e
 						}
+						log.Println("[ALLELE_RANGES]", gen.GetAlleleRanges().String(true))
 						f, e := os.Create(ctx.String("output"))
 						if e != nil {
 							return e

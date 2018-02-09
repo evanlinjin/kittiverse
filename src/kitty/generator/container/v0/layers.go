@@ -20,14 +20,14 @@ const (
 type Layers struct {
 	LayerTypes       []LayersOfType
 	Breeds           []string
-	layerTypesByName map[string]*LayersOfType `enc:"-"`
-	breedsByName     map[string]struct{}      `enc:"-"`
+	layerTypesByName map[string]int `enc:"-"`
+	breedsByName     map[string]int      `enc:"-"`
 }
 
 func NewLayersContainer() *Layers {
 	return &Layers{
-		layerTypesByName: make(map[string]*LayersOfType),
-		breedsByName:     make(map[string]struct{}),
+		layerTypesByName: make(map[string]int),
+		breedsByName:     make(map[string]int),
 	}
 }
 
@@ -53,13 +53,13 @@ func (lc *Layers) Import(raw []byte) error {
 		return e
 	}
 	// Prepare maps.
-	lc.layerTypesByName = make(map[string]*LayersOfType)
+	lc.layerTypesByName = make(map[string]int)
 	for i, v := range lc.LayerTypes {
-		lc.layerTypesByName[v.OfType] = &lc.LayerTypes[i]
+		lc.layerTypesByName[v.OfType] = i
 	}
-	lc.breedsByName = make(map[string]struct{})
-	for _, v := range lc.Breeds {
-		lc.breedsByName[v] = struct{}{}
+	lc.breedsByName = make(map[string]int)
+	for i, v := range lc.Breeds {
+		lc.breedsByName[v] = i
 	}
 	return nil
 }
@@ -74,11 +74,6 @@ func (lc *Layers) Compile(rootDir string, images container.Images) error {
 		log.WithError(e).Error("failed to initiate later types")
 		return e
 	}
-	// Get breeds.
-	if e := initBreeds(lc, rootDir); e != nil {
-		log.WithError(e).Error("failed to initiate breeds")
-		return e
-	}
 	// Get layers.
 	if e := initLayers(lc, rootDir, images); e != nil {
 		log.WithError(e).Error("failed to initiate layers")
@@ -87,17 +82,21 @@ func (lc *Layers) Compile(rootDir string, images container.Images) error {
 	return nil
 }
 
-func (lc *Layers) GetAlleleRanges() genetics.AlleleRanges {
+func (lc *Layers) GetAlleleRanges() *genetics.AlleleRanges {
 	getRange := func(pos genetics.DNAPos) genetics.AlleleRange {
 		return genetics.AlleleRange{
-			Min: 0,
-			Max: uint16(len(lc.layerTypesByName[pos.String()].Attributes) - 1),
+			Min: genetics.Allele{}.String(),
+			Max: genetics.NewAlleleFromUint16(uint16(
+				len(lc.LayerTypes[lc.layerTypesByName[pos.String()]].Attributes) - 1,
+			)).String(),
 		}
 	}
-	return genetics.AlleleRanges{
+	return &genetics.AlleleRanges{
 		Breed: genetics.AlleleRange{
-			Min: 0,
-			Max: uint16(len(lc.Breeds) - 1),
+			Min: genetics.Allele{}.String(),
+			Max: genetics.NewAlleleFromUint16(uint16(
+				len(lc.Breeds) - 1,
+			)).String(),
 		},
 		BodyAttribute: getRange(genetics.DNABodyAttrPos),
 		BodyColorA:    getRange(genetics.DNABodyColorAPos),
@@ -121,16 +120,36 @@ func (lc *Layers) GenerateKitty(dna genetics.DNA) (image.Image, error) {
 	<<< MEMBER HELPERS >>>
 */
 
+type layerTypeAction func(lt *LayersOfType, ltDir string, breedDirs []os.FileInfo) error
+
+func (lc *Layers) rangeLayerTypes(rootDir string, action layerTypeAction) {
+	for i := 0; i < len(lc.LayerTypes); i++ {
+		var (
+			lt    = &lc.LayerTypes[i]
+			ltDir = path.Join(rootDir, lt.OfType)
+		)
+		breedDirs, e := ioutil.ReadDir(ltDir)
+		if e != nil {
+			log.WithField("index", i).
+				WithField("layer_type", lt.OfType).
+				WithField("dir", ltDir).
+				WithError(e).Error("failed to read directory")
+			continue
+		}
+		action(lt, ltDir, breedDirs)
+	}
+}
+
 func (lc *Layers) addLayerType(ltName string) error {
 	if _, has := lc.layerTypesByName[ltName]; has {
 		return common.ErrAlreadyExists
 	}
 	lc.LayerTypes = append(lc.LayerTypes, LayersOfType{
 		OfType:           ltName,
-		layersByKey:      make(map[attributeKey]*Layer),
-		attributesByName: make(map[string]struct{}),
+		layersByKey:      make(map[attributeKey]int),
+		attributesByName: make(map[string]int),
 	})
-	lc.layerTypesByName[ltName] = &lc.LayerTypes[len(lc.LayerTypes)-1]
+	lc.layerTypesByName[ltName] = len(lc.LayerTypes)-1
 	return nil
 }
 
@@ -139,7 +158,7 @@ func (lc *Layers) addBreed(bName string) error {
 		return common.ErrAlreadyExists
 	}
 	lc.Breeds = append(lc.Breeds, bName)
-	lc.breedsByName[bName] = struct{}{}
+	lc.breedsByName[bName] = len(lc.Breeds) - 1
 	return nil
 }
 
@@ -167,50 +186,27 @@ func initLayerTypes(lc *Layers, rootDir string) error {
 	return nil
 }
 
-func initBreeds(lc *Layers, rootDir string) error {
-	for _, lt := range lc.LayerTypes {
-		subDirs, e := ioutil.ReadDir(path.Join(rootDir, lt.OfType))
-		if e != nil {
-			return e
-		}
-		for _, dir := range subDirs {
-			if dir.IsDir() == false {
-				continue
-			}
-			if e := lc.addBreed(dir.Name()); e != nil{
-				switch e {
-				case common.ErrAlreadyExists:
-				default:
-					return e
-				}
-			}
-		}
-	}
-	return nil
-}
-
 func initLayers(lc *Layers, rootDir string, images container.Images) error {
-	for _, lt := range lc.LayerTypes {
-		ltDir := path.Join(rootDir, lt.OfType)
-		bDirs, e := ioutil.ReadDir(ltDir)
-		if e != nil {
-			return e
-		}
+
+	lc.rangeLayerTypes(rootDir, func(lt *LayersOfType, ltDir string, bDirs []os.FileInfo) error {
+		log.WithField("dir", ltDir).
+			WithField("breed_count", len(bDirs)).
+			Printf("ranging later type '%s'", lt.OfType)
+
 		for _, bDir := range bDirs {
+			// Skip if not directory.
 			if bDir.IsDir() == false {
 				continue
 			}
 			breed := bDir.Name()
+			lc.addBreed(breed)
 			// collect attributes.
 			files, e := ioutil.ReadDir(path.Join(ltDir, bDir.Name()))
 			if e != nil {
 				return e
 			}
 			for _, file := range files {
-				if file.IsDir() {
-					continue
-				}
-				if strings.HasSuffix(file.Name(), ".png") == false {
+				if file.IsDir() || strings.HasSuffix(file.Name(), ".png") == false {
 					continue
 				}
 				var (
@@ -243,45 +239,13 @@ func initLayers(lc *Layers, rootDir string, images container.Images) error {
 					isArea, isOutline = false, true
 				}
 				// Extract image.
-				f, e := os.Open(fullPath)
-				if e != nil {
-					log.WithError(e).Error("failed to open image file")
-				}
-				imgRaw, e := ioutil.ReadAll(f)
+				imgRaw, e := common.GetRawImageFromFile(fullPath)
 				if e != nil {
 					log.WithError(e).Error("failed to read image file")
 				}
-				imgHash, e := images.Add(imgRaw)
-				if e != nil {
-					switch e {
-					case common.ErrAlreadyExists:
-						log.WithField("layer_type", lt.OfType).
-							WithField("breed", breed).
-							WithField("full_attribute", fullName).
-							WithError(e).Debug("image already exists in container")
-					default:
-						log.WithField("layer_type", lt.OfType).
-							WithField("breed", breed).
-							WithField("full_attribute", fullName).
-							WithError(e).Error("failed to add image in container")
-						continue
-					}
-				}
+				imgHash := images.GetOrAdd(imgRaw)
 				// Append.
-				layer, ok := lt.Get(newAttributeKey(attributeName, breed))
-				if !ok {
-					layer, e = lt.addLayer(Layer{
-						OfAttribute: attributeName,
-						OfBreed:     breed,
-					})
-					if e != nil {
-						log.WithField("layer_type", lt.OfType).
-							WithField("breed", breed).
-							WithField("full_attribute", fullName).
-							WithError(e).Error("failed to add attribute")
-						continue
-					}
-				}
+				layer := lt.getOrAddLayer(Layer{OfAttribute: attributeName, OfBreed: breed})
 				layer.ensurePartsCount(partIndex + 1)
 				switch {
 				case isArea:
@@ -290,10 +254,25 @@ func initLayers(lc *Layers, rootDir string, images container.Images) error {
 					layer.Parts[partIndex][1] = imgHash
 				}
 				// Ensure attribute.
-				lt.addAttribute(attributeName)
+				if e := lt.addAttribute(attributeName); e != nil {
+					switch e {
+					case common.ErrAlreadyExists:
+					default:
+						log.WithField("layer_type", lt.OfType).
+							WithField("breed", breed).
+							WithField("full_attribute", fullName).
+							WithError(e).Error("failed to add attribute")
+					}
+				} else {
+					log.WithField("layer_type", lt.OfType).
+						WithField("breed", breed).
+						WithField("full_attribute", fullName).
+						Infof("attribute '%s' added", attributeName)
+				}
 			}
 		}
-	}
+		return nil
+	})
 	return nil
 }
 
@@ -310,28 +289,31 @@ type LayersOfType struct {
 	OfType           string
 	Layers           []Layer
 	Attributes       []string
-	layersByKey      map[attributeKey]*Layer `enc:"-"` // aka, by attribute and breed
-	attributesByName map[string]struct{}     `enc:"-"`
+	layersByKey      map[attributeKey]int `enc:"-"` // aka, by attribute and breed
+	attributesByName map[string]int     `enc:"-"`
 }
 
 func (lt *LayersOfType) Init() {
-	lt.layersByKey = make(map[attributeKey]*Layer)
+	lt.layersByKey = make(map[attributeKey]int)
 	for i, v := range lt.Layers {
-		lt.layersByKey[v.key()] = &lt.Layers[i]
+		lt.layersByKey[v.key()] = i
 	}
-	lt.attributesByName = make(map[string]struct{})
-	for _, v := range lt.Attributes {
-		lt.attributesByName[v] = struct{}{}
+	lt.attributesByName = make(map[string]int)
+	for i, v := range lt.Attributes {
+		lt.attributesByName[v] = i
 	}
 }
 
-func (lt *LayersOfType) addLayer(layer Layer) (*Layer, error) {
-	if _, has := lt.layersByKey[layer.key()]; has {
-		return nil, common.ErrAlreadyExists
+func (lt *LayersOfType) getOrAddLayer(layer Layer) *Layer {
+	var key = layer.key()
+	if i, has := lt.layersByKey[key]; has {
+		return &lt.Layers[i]
+	} else {
+		lt.Layers = append(lt.Layers, layer)
+		i = len(lt.Layers)-1
+		lt.layersByKey[key] = i
+		return &lt.Layers[i]
 	}
-	lt.Layers = append(lt.Layers, layer)
-	lt.layersByKey[layer.key()] = &lt.Layers[len(lt.Layers)-1]
-	return &lt.Layers[len(lt.Layers)-1], nil
 }
 
 func (lt *LayersOfType) addAttribute(attrName string) error {
@@ -339,16 +321,16 @@ func (lt *LayersOfType) addAttribute(attrName string) error {
 		return common.ErrAlreadyExists
 	}
 	lt.Attributes = append(lt.Attributes, attrName)
-	lt.attributesByName[attrName] = struct{}{}
+	lt.attributesByName[attrName] = len(lt.Attributes)-1
 	return nil
 }
 
-func (lt *LayersOfType) Get(key attributeKey) (*Layer, bool) {
-	v, has := lt.layersByKey[key]
+func (lt *LayersOfType) get(key attributeKey) (*Layer, bool) {
+	i, has := lt.layersByKey[key]
 	if !has {
 		return nil, false
 	}
-	return v, true
+	return &lt.Layers[i], true
 }
 
 // Layer represents a kitty layer.

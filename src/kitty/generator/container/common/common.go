@@ -7,6 +7,8 @@ import (
 	"github.com/skycoin/skycoin/src/cipher"
 	"image"
 	"image/png"
+	"os"
+	"io/ioutil"
 )
 
 const (
@@ -33,4 +35,16 @@ func GetImage(ic container.Images, hash cipher.SHA256) (image.Image, error) {
 		return nil, ErrDoesNotExist
 	}
 	return png.Decode(bytes.NewReader(raw))
+}
+
+func GetRawImageFromFile(path string) ([]byte, error) {
+	f, e := os.Open(path)
+	if e != nil {
+		return nil, e
+	}
+	raw, e := ioutil.ReadAll(f)
+	if e != nil {
+		return nil, e
+	}
+	return raw, nil
 }

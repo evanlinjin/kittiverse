@@ -9,4 +9,5 @@ type Images interface {
 	Add(raw []byte) (cipher.SHA256, error)
 	Remove(hash cipher.SHA256)
 	Get(hash cipher.SHA256) ([]byte, bool)
+	GetOrAdd(raw []byte) cipher.SHA256
 }

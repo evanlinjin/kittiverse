@@ -3,6 +3,7 @@ package genetics
 import (
 	"encoding/hex"
 	"errors"
+	"encoding/json"
 )
 
 const (
@@ -37,6 +38,10 @@ func (a Allele) ToHex() string {
 	return hex.EncodeToString(a[:])
 }
 
+func (a Allele) String() string {
+	return a.ToHex()
+}
+
 func (a *Allele) Set(b []byte) error {
 	if len(b) != AlleleLen {
 		return ErrInvalidHexLen
@@ -60,19 +65,29 @@ func (a Allele) Decrement() Allele {
 }
 
 type AlleleRange struct {
-	Min uint16 `json:"min"`
-	Max uint16 `json:"max"`
+	Min string `json:"min"`
+	Max string `json:"max"`
 }
 
 type AlleleRanges struct {
-	Breed         AlleleRange `json:"breed"`
-	BodyAttribute AlleleRange `json:"body_attribute"`
-	BodyColorA    AlleleRange `json:"body_color_a"`
-	BodyColorB    AlleleRange `json:"body_color_b"`
-	BodyPattern   AlleleRange `json:"body_pattern"`
-	EarsAttribute AlleleRange `json:"ears_attribute"`
-	EyesAttribute AlleleRange `json:"eyes_attribute"`
-	EyesColor     AlleleRange `json:"eyes_color"`
-	NoseAttribute AlleleRange `json:"nose_attribute"`
-	TailAttribute AlleleRange `json:"tail_attribute"`
+	Breed         AlleleRange
+	BodyAttribute AlleleRange
+	BodyColorA    AlleleRange
+	BodyColorB    AlleleRange
+	BodyPattern   AlleleRange
+	EarsAttribute AlleleRange
+	EyesAttribute AlleleRange
+	EyesColor     AlleleRange
+	NoseAttribute AlleleRange
+	TailAttribute AlleleRange
+}
+
+func (r *AlleleRanges) String(pretty bool) string {
+	if pretty {
+		data, _ := json.MarshalIndent(r, "", "  ")
+		return string(data)
+	} else {
+		data, _ := json.Marshal(r)
+		return string(data)
+	}
 }

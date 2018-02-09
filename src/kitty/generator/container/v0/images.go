@@ -96,3 +96,19 @@ func (ic *Images) Get(hash cipher.SHA256) ([]byte, bool) {
 	}
 	return *v, true
 }
+
+func (ic *Images) GetOrAdd(raw []byte) cipher.SHA256 {
+	hash := cipher.SumSHA256(raw)
+	// Check if map is prepared.
+	if ic.imagesByHash == nil {
+		ic.imagesByHash = make(map[cipher.SHA256]*[]byte)
+	}
+	// Check if already exists.
+	if _, has := ic.imagesByHash[hash]; has {
+		return hash
+	}
+	// Append.
+	ic.Images = append(ic.Images, raw)
+	ic.imagesByHash[hash] = &ic.Images[len(ic.Images)-1]
+	return hash
+}

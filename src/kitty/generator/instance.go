@@ -43,6 +43,7 @@ func (i *Instance) Import(r io.ReadCloser, size int) error {
 }
 
 func (i *Instance) Export(w io.Writer) error {
+
 	_, e := w.Write(encoder.Serialize(InstanceFile{
 		Images: i.ic.Export(),
 		Layers: i.lc.Export(),
@@ -54,7 +55,7 @@ func (i *Instance) Compile(dir string) error {
 	return i.lc.Compile(dir, i.ic)
 }
 
-func (i *Instance) GetAlleleRanges() genetics.AlleleRanges {
+func (i *Instance) GetAlleleRanges() *genetics.AlleleRanges {
 	return i.lc.GetAlleleRanges()
 }
 
