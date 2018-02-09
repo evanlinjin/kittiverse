@@ -5,8 +5,8 @@ import (
 	"github.com/kittycash/kittiverse/src/kitty/genetics"
 	"github.com/sirupsen/logrus"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-	"io"
 	"image"
+	"io"
 )
 
 type InstanceFile struct {

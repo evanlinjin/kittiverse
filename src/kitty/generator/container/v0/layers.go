@@ -6,11 +6,11 @@ import (
 	"github.com/kittycash/kittiverse/src/kitty/genetics"
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"image"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
-	"image"
 )
 
 const (
@@ -22,6 +22,13 @@ type Layers struct {
 	Breeds           []string
 	layerTypesByName map[string]*LayersOfType `enc:"-"`
 	breedsByName     map[string]struct{}      `enc:"-"`
+}
+
+func NewLayersContainer() *Layers {
+	return &Layers{
+		layerTypesByName: make(map[string]*LayersOfType),
+		breedsByName:     make(map[string]struct{}),
+	}
 }
 
 func (lc *Layers) Version() uint16 {
@@ -102,8 +109,9 @@ func (lc *Layers) GetAlleleRanges() genetics.AlleleRanges {
 }
 
 func (lc *Layers) GenerateKitty(dna genetics.DNA) (image.Image, error) {
+	out := image.NewRGBA(image.Rect(0, 0, common.XpxLen, common.YpxLen))
 	// TODO: Complete.
-	return nil, nil
+	return out, nil
 }
 
 /*
@@ -248,7 +256,6 @@ func initLayers(lc *Layers, rootDir string, images container.Images) error {
 						WithError(e).Error("failed to add image to container")
 					continue
 				}
-
 				// Append.
 				layer, ok := lt.Get(newAttributeKey(attributeName, breed))
 				if !ok {

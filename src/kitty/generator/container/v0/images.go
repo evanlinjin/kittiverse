@@ -18,6 +18,12 @@ type Images struct {
 	imagesByHash map[cipher.SHA256]*[]byte `enc:"-"`
 }
 
+func NewImagesContainer() *Images {
+	return &Images{
+		imagesByHash: make(map[cipher.SHA256]*[]byte),
+	}
+}
+
 func (ic *Images) Version() uint16 {
 	return version
 }
