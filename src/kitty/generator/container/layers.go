@@ -11,5 +11,5 @@ type Layers interface {
 	Export() []byte
 	Compile(rootDir string, images Images) error
 	GetAlleleRanges() *genetics.AlleleRanges
-	GenerateKitty(dna genetics.DNA) (image.Image, error)
+	GenerateKitty(images Images, dna genetics.DNA) (image.Image, error)
 }

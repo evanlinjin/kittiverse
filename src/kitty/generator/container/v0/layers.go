@@ -11,6 +11,8 @@ import (
 	"os"
 	"path"
 	"strings"
+	"errors"
+	"image/draw"
 )
 
 const (
@@ -110,9 +112,52 @@ func (lc *Layers) GetAlleleRanges() *genetics.AlleleRanges {
 	}
 }
 
-func (lc *Layers) GenerateKitty(dna genetics.DNA) (image.Image, error) {
+func (lc *Layers) GenerateKitty(ic container.Images, dna genetics.DNA) (image.Image, error) {
 	out := image.NewRGBA(image.Rect(0, 0, common.XpxLen, common.YpxLen))
-	// TODO: Complete.
+
+	// Get breed.
+	breed := lc.getBreed(dna.GetPhenotype(genetics.DNABreedPos))
+
+	// Make image input common.
+	iic := &imgInputCommon{lc: lc, ic: ic, breed: breed, dna: dna}
+
+	// Generate fur.
+	fur := common.EmptyImage()
+	{
+		bg, e := generateImage(iic, genetics.DNABodyColorAPos, nil)
+		if e != nil {
+			return nil, e
+		}
+		fg, e := generateImage(iic, genetics.DNABodyColorBPos, nil)
+		if e != nil {
+			return nil, e
+		}
+		pt, e := generateImage(iic, genetics.DNABodyPatternPos, fg)
+		if e != nil {
+			return nil, e
+		}
+		common.DrawOutline(out, bg)
+		common.DrawOutline(out, pt)
+	}
+
+	// Generate tail.
+	{
+		tail, e := generateImage(iic, genetics.DNATailAttrPos, fur)
+		if e != nil {
+			return nil, e
+		}
+		common.DrawOutline(out, tail)
+	}
+
+	// Generate body.
+	{
+		body, e := generateImage(iic, genetics.DNABodyAttrPos, fur)
+		if e != nil {
+			return nil, e
+		}
+		common.DrawOutline(out, body)
+	}
+
 	return out, nil
 }
 
@@ -160,6 +205,14 @@ func (lc *Layers) addBreed(bName string) error {
 	lc.Breeds = append(lc.Breeds, bName)
 	lc.breedsByName[bName] = len(lc.Breeds) - 1
 	return nil
+}
+
+func (lc *Layers) getLayerType(pos genetics.DNAPos) *LayersOfType {
+	return &lc.LayerTypes[lc.layerTypesByName[pos.String()]]
+}
+
+func (lc *Layers) getBreed(a genetics.Allele) string {
+	return lc.Breeds[a.ToUint16()]
 }
 
 /*
@@ -281,6 +334,43 @@ func getPartIndex(str string) int {
 	return int([]byte(p)[0] - 65)
 }
 
+type imgInputCommon struct {
+	lc *Layers
+	ic container.Images
+	breed string
+	dna genetics.DNA
+}
+
+func generateImage(c *imgInputCommon, dnaPos genetics.DNAPos, bg image.Image, ps ...int) (image.Image, error) {
+	var (
+		allele    = c.dna.GetPhenotype(dnaPos)
+		lt        = c.lc.getLayerType(dnaPos)
+		attribute = lt.Attributes[allele.ToUint16()]
+	)
+
+	layer, ok := lt.get(newAttributeKey(attribute, c.breed))
+	if !ok {
+		layer, ok = lt.get(newAttributeKey(attribute, "default"))
+		if !ok {
+			log.WithField("layer_type", lt.OfType).
+				WithField("breed", c.breed).
+				WithField("attribute", attribute).
+				Error("failed to find layer")
+			return nil, errors.New("failed to find layer")
+		}
+	}
+	return layer.generateImage(c.ic, bg, ps...)
+}
+
+func overlayImage(c *imgInputCommon, dst draw.Image, dnaPos genetics.DNAPos, bg image.Image, ps ...int) error {
+	src, e := generateImage(c, dnaPos, bg, ps...)
+	if e != nil {
+		return e
+	}
+	common.DrawOutline(dst, src)
+	return nil
+}
+
 /*
 	<<< TYPES >>>
 */
@@ -360,4 +450,56 @@ type attributeKey string
 
 func newAttributeKey(attribute, breed string) attributeKey {
 	return attributeKey(attribute + "_" + breed)
+}
+
+type layerPartAction func(i int, areaImg, outlineImg image.Image)
+
+func (a *Layer) rangeParts(ic container.Images, action layerPartAction) error {
+	var e error
+	for i, pair := range a.Parts {
+		var areaImg image.Image
+		if pair[0] != (cipher.SHA256{}) {
+			if areaImg, e = common.GetImage(ic, pair[0]); e != nil {
+				return e
+			}
+		}
+		var outlineImg image.Image
+		if pair[1] != (cipher.SHA256{}) {
+			if outlineImg, e = common.GetImage(ic, pair[1]); e != nil {
+				return e
+			}
+		}
+		action(i, areaImg, outlineImg)
+	}
+	return nil
+}
+
+func (a *Layer) generateImage(ic container.Images, bg image.Image, ps ...int) (image.Image, error) {
+	// partsMap informs of which parts are to be included in the generated image.
+	var partsMap = make(map[int]bool)
+	if len(ps) == 0 {
+		for i := 0; i < len(a.Parts); i++ {
+			partsMap[i] = true
+		}
+	} else {
+		for _, i := range ps {
+			partsMap[i] = true
+		}
+	}
+
+	out := image.NewRGBA(image.Rect(0, 0, common.XpxLen, common.YpxLen))
+	e := a.rangeParts(ic, func(i int, areaImg, outlineImg image.Image) {
+		if partsMap[i] {
+			if areaImg != nil {
+				common.DrawArea(out, bg, areaImg)
+			}
+			if outlineImg != nil {
+				common.DrawOutline(out, outlineImg)
+			}
+		}
+	})
+	if e != nil {
+		return nil, e
+	}
+	return out, nil
 }

@@ -9,6 +9,7 @@ import (
 	"image/png"
 	"io/ioutil"
 	"os"
+	"image/draw"
 )
 
 const (
@@ -47,4 +48,16 @@ func GetRawImageFromFile(path string) ([]byte, error) {
 		return nil, e
 	}
 	return raw, nil
+}
+
+func DrawArea(dst draw.Image, bg, area image.Image) {
+	draw.DrawMask(dst, dst.Bounds(), bg, image.ZP, area, image.ZP, draw.Over)
+}
+
+func DrawOutline(dst draw.Image, outline image.Image) {
+	draw.Draw(dst, dst.Bounds(), outline, image.ZP, draw.Over)
+}
+
+func EmptyImage() *image.RGBA {
+	return image.NewRGBA(image.Rect(0, 0, XpxLen, YpxLen))
 }
