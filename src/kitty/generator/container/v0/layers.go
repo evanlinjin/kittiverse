@@ -71,14 +71,17 @@ func (lc *Layers) Export() []byte {
 func (lc *Layers) Compile(rootDir string, images container.Images) error {
 	// Get layer types.
 	if e := initLayerTypes(lc, rootDir); e != nil {
+		log.WithError(e).Error("failed to initiate later types")
 		return e
 	}
 	// Get breeds.
 	if e := initBreeds(lc, rootDir); e != nil {
+		log.WithError(e).Error("failed to initiate breeds")
 		return e
 	}
 	// Get layers.
 	if e := initLayers(lc, rootDir, images); e != nil {
+		log.WithError(e).Error("failed to initiate layers")
 		return e
 	}
 	return nil
@@ -174,8 +177,12 @@ func initBreeds(lc *Layers, rootDir string) error {
 			if dir.IsDir() == false {
 				continue
 			}
-			if e := lc.addBreed(dir.Name()); e != nil {
-				return e
+			if e := lc.addBreed(dir.Name()); e != nil{
+				switch e {
+				case common.ErrAlreadyExists:
+				default:
+					return e
+				}
 			}
 		}
 	}
@@ -233,11 +240,7 @@ func initLayers(lc *Layers, rootDir string, images container.Images) error {
 				}
 				// Checks.
 				if isArea && isOutline || !isArea && !isOutline {
-					log.WithField("layer_type", lt.OfType).
-						WithField("breed", breed).
-						WithField("full_attribute", fullName).
-						Error("invalid 'area' and 'outline' combination")
-					continue
+					isArea, isOutline = false, true
 				}
 				// Extract image.
 				f, e := os.Open(fullPath)
@@ -250,11 +253,19 @@ func initLayers(lc *Layers, rootDir string, images container.Images) error {
 				}
 				imgHash, e := images.Add(imgRaw)
 				if e != nil {
-					log.WithField("layer_type", lt.OfType).
-						WithField("breed", breed).
-						WithField("full_attribute", fullName).
-						WithError(e).Error("failed to add image to container")
-					continue
+					switch e {
+					case common.ErrAlreadyExists:
+						log.WithField("layer_type", lt.OfType).
+							WithField("breed", breed).
+							WithField("full_attribute", fullName).
+							WithError(e).Debug("image already exists in container")
+					default:
+						log.WithField("layer_type", lt.OfType).
+							WithField("breed", breed).
+							WithField("full_attribute", fullName).
+							WithError(e).Error("failed to add image in container")
+						continue
+					}
 				}
 				// Append.
 				layer, ok := lt.Get(newAttributeKey(attributeName, breed))

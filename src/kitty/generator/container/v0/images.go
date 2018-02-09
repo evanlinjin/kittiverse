@@ -9,8 +9,12 @@ import (
 
 var log = logrus.New()
 
+func init() {
+	log.SetLevel(logrus.DebugLevel)
+}
+
 const (
-	version = 0
+	version uint16 = 0
 )
 
 type Images struct {

@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"github.com/kittycash/kittiverse/src/kitty/generator"
+	"github.com/kittycash/kittiverse/src/kitty/generator/container/v0"
 	"github.com/kittycash/kittiverse/src/kitty/graphics"
 	"gopkg.in/urfave/cli.v1"
 	"image"
@@ -11,8 +13,6 @@ import (
 	"log"
 	"os"
 	"strings"
-	"github.com/kittycash/kittiverse/src/kitty/generator"
-	"github.com/kittycash/kittiverse/src/kitty/generator/container/v0"
 )
 
 var app = cli.NewApp()
@@ -191,7 +191,7 @@ func init() {
 			},
 		},
 		cli.Command{
-			Name: "admin",
+			Name:  "admin",
 			Usage: "tools for compiling and managing kitty generation files",
 			Subcommands: cli.Commands{
 				cli.Command{
@@ -199,14 +199,14 @@ func init() {
 					Usage: "compiles a kitty generation file",
 					Flags: cli.FlagsByName{
 						cli.StringFlag{
-							Name: "dir, d",
+							Name:  "dir, d",
 							Usage: "path of loose files to compile from",
-							Value: "./kitty_layers",
+							Value: "kitty_layers",
 						},
 						cli.StringFlag{
-							Name: "output, o",
+							Name:  "output, o",
 							Usage: "path of output file",
-							Value: "./file.kcg",
+							Value: "file.kcg",
 						},
 					},
 					Action: func(ctx *cli.Context) error {
