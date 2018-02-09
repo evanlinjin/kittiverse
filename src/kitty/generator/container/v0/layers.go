@@ -3,12 +3,14 @@ package v0
 import (
 	"github.com/kittycash/kittiverse/src/kitty/generator/container"
 	"github.com/kittycash/kittiverse/src/kitty/generator/container/common"
+	"github.com/kittycash/kittiverse/src/kitty/genetics"
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"io/ioutil"
+	"os"
 	"path"
 	"strings"
-	"os"
+	"image"
 )
 
 const (
@@ -75,8 +77,33 @@ func (lc *Layers) Compile(rootDir string, images container.Images) error {
 	return nil
 }
 
-func (lc *Layer) GenerateKitty() {
+func (lc *Layers) GetAlleleRanges() genetics.AlleleRanges {
+	getRange := func(pos genetics.DNAPos) genetics.AlleleRange {
+		return genetics.AlleleRange{
+			Min: 0,
+			Max: uint16(len(lc.layerTypesByName[pos.String()].Attributes) - 1),
+		}
+	}
+	return genetics.AlleleRanges{
+		Breed: genetics.AlleleRange{
+			Min: 0,
+			Max: uint16(len(lc.Breeds) - 1),
+		},
+		BodyAttribute: getRange(genetics.DNABodyAttrPos),
+		BodyColorA:    getRange(genetics.DNABodyColorAPos),
+		BodyColorB:    getRange(genetics.DNABodyColorBPos),
+		BodyPattern:   getRange(genetics.DNABodyPatternPos),
+		EarsAttribute: getRange(genetics.DNAEarsAttrPos),
+		EyesAttribute: getRange(genetics.DNAEyesAttrPos),
+		EyesColor:     getRange(genetics.DNAEyesColorPos),
+		NoseAttribute: getRange(genetics.DNANoseAttrPos),
+		TailAttribute: getRange(genetics.DNATailAttrPos),
+	}
+}
 
+func (lc *Layers) GenerateKitty(dna genetics.DNA) (image.Image, error) {
+	// TODO: Complete.
+	return nil, nil
 }
 
 /*
@@ -88,8 +115,9 @@ func (lc *Layers) addLayerType(ltName string) error {
 		return common.ErrAlreadyExists
 	}
 	lc.LayerTypes = append(lc.LayerTypes, LayersOfType{
-		OfType:      ltName,
-		layersByKey: make(map[attributeKey]*Layer),
+		OfType:           ltName,
+		layersByKey:      make(map[attributeKey]*Layer),
+		attributesByName: make(map[string]struct{}),
 	})
 	lc.layerTypesByName[ltName] = &lc.LayerTypes[len(lc.LayerTypes)-1]
 	return nil
@@ -171,9 +199,9 @@ func initLayers(lc *Layers, rootDir string, images container.Images) error {
 					continue
 				}
 				var (
-					fullPath      = path.Join(rootDir, lt.OfType, breed, file.Name())
-					fullName      = strings.TrimSuffix(file.Name(), ".png")
-					splitName     = strings.Split(fullName, "_")
+					fullPath  = path.Join(rootDir, lt.OfType, breed, file.Name())
+					fullName  = strings.TrimSuffix(file.Name(), ".png")
+					splitName = strings.Split(fullName, "_")
 
 					attributeName = splitName[0]
 					partIndex     = 0
@@ -224,25 +252,27 @@ func initLayers(lc *Layers, rootDir string, images container.Images) error {
 				// Append.
 				layer, ok := lt.Get(newAttributeKey(attributeName, breed))
 				if !ok {
-					 layer, e = lt.Add(Layer{
-					 	OfAttribute: attributeName,
-					 	OfBreed:     breed,
-					 })
-					 if e != nil {
-					 	log.WithField("layer_type", lt.OfType).
+					layer, e = lt.addLayer(Layer{
+						OfAttribute: attributeName,
+						OfBreed:     breed,
+					})
+					if e != nil {
+						log.WithField("layer_type", lt.OfType).
 							WithField("breed", breed).
 							WithField("full_attribute", fullName).
 							WithError(e).Error("failed to add attribute")
 						continue
-					 }
+					}
 				}
-				layer.ensurePartsCount(partIndex+1)
+				layer.ensurePartsCount(partIndex + 1)
 				switch {
 				case isArea:
 					layer.Parts[partIndex][0] = imgHash
 				case isOutline:
 					layer.Parts[partIndex][1] = imgHash
 				}
+				// Ensure attribute.
+				lt.addAttribute(attributeName)
 			}
 		}
 	}
@@ -259,28 +289,40 @@ func getPartIndex(str string) int {
 */
 
 type LayersOfType struct {
-	OfType      string
-	Layers      []Layer
-	layersByKey map[attributeKey]*Layer `enc:"-"` // aka, by attribute and breed
+	OfType           string
+	Layers           []Layer
+	Attributes       []string
+	layersByKey      map[attributeKey]*Layer `enc:"-"` // aka, by attribute and breed
+	attributesByName map[string]struct{}     `enc:"-"`
 }
 
 func (lt *LayersOfType) Init() {
-	if lt.layersByKey == nil {
-		lt.layersByKey = make(map[attributeKey]*Layer)
+	lt.layersByKey = make(map[attributeKey]*Layer)
+	for i, v := range lt.Layers {
+		lt.layersByKey[v.key()] = &lt.Layers[i]
 	}
-	for i := 0; i < len(lt.Layers); i++ {
-		layer := &lt.Layers[i]
-		lt.layersByKey[layer.key()] = layer
+	lt.attributesByName = make(map[string]struct{})
+	for _, v := range lt.Attributes {
+		lt.attributesByName[v] = struct{}{}
 	}
 }
 
-func (lt *LayersOfType) Add(layer Layer) (*Layer, error) {
+func (lt *LayersOfType) addLayer(layer Layer) (*Layer, error) {
 	if _, has := lt.layersByKey[layer.key()]; has {
 		return nil, common.ErrAlreadyExists
 	}
 	lt.Layers = append(lt.Layers, layer)
 	lt.layersByKey[layer.key()] = &lt.Layers[len(lt.Layers)-1]
 	return &lt.Layers[len(lt.Layers)-1], nil
+}
+
+func (lt *LayersOfType) addAttribute(attrName string) error {
+	if _, has := lt.attributesByName[attrName]; has {
+		return common.ErrAlreadyExists
+	}
+	lt.Attributes = append(lt.Attributes, attrName)
+	lt.attributesByName[attrName] = struct{}{}
+	return nil
 }
 
 func (lt *LayersOfType) Get(key attributeKey) (*Layer, bool) {
@@ -306,7 +348,7 @@ type Layer struct {
 func (a *Layer) ensurePartsCount(n int) {
 	if len(a.Parts) < n {
 		a.Parts = append(a.Parts,
-			make([][2]cipher.SHA256, n - len(a.Parts))...)
+			make([][2]cipher.SHA256, n-len(a.Parts))...)
 	}
 }
 

@@ -15,24 +15,26 @@ var (
 
 type Allele [AlleleLen]byte
 
+func NewAlleleFromUint16(n uint16) Allele {
+	return Allele{byte(n / 256), byte(n % 256)}
+}
+
+func NewAlleleFromHex(hs string) (Allele, error) {
+	var a Allele
+	h, e := hex.DecodeString(hs)
+	if e != nil {
+		return a, e
+	}
+	e = a.Set(h)
+	return a, e
+}
+
 func (a Allele) ToUint16() uint16 {
 	return uint16(256*int(a[0]) + int(a[1]))
 }
 
 func (a Allele) ToHex() string {
 	return hex.EncodeToString(a[:])
-}
-
-func (a *Allele) FromUint16(n uint16) {
-	a[0], a[1] = byte(n/256), byte(n%256)
-}
-
-func (a *Allele) FromHex(hs string) error {
-	h, e := hex.DecodeString(hs)
-	if e != nil {
-		return e
-	}
-	return a.Set(h)
 }
 
 func (a *Allele) Set(b []byte) error {
@@ -55,4 +57,22 @@ func (a Allele) Decrement() Allele {
 		a[1]--
 	}
 	return a
+}
+
+type AlleleRange struct {
+	Min uint16 `json:"min"`
+	Max uint16 `json:"max"`
+}
+
+type AlleleRanges struct {
+	Breed         AlleleRange `json:"breed"`
+	BodyAttribute AlleleRange `json:"body_attribute"`
+	BodyColorA    AlleleRange `json:"body_color_a"`
+	BodyColorB    AlleleRange `json:"body_color_b"`
+	BodyPattern   AlleleRange `json:"body_pattern"`
+	EarsAttribute AlleleRange `json:"ears_attribute"`
+	EyesAttribute AlleleRange `json:"eyes_attribute"`
+	EyesColor     AlleleRange `json:"eyes_color"`
+	NoseAttribute AlleleRange `json:"nose_attribute"`
+	TailAttribute AlleleRange `json:"tail_attribute"`
 }

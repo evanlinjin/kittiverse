@@ -2,10 +2,11 @@ package generator
 
 import (
 	"github.com/kittycash/kittiverse/src/kitty/generator/container"
+	"github.com/kittycash/kittiverse/src/kitty/genetics"
 	"github.com/sirupsen/logrus"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"io"
-	"github.com/kittycash/kittiverse/src/kitty/genetics"
+	"image"
 )
 
 type InstanceFile struct {
@@ -53,6 +54,10 @@ func (i *Instance) Compile(dir string) error {
 	return i.lc.Compile(dir, i.ic)
 }
 
-func (i *Instance) GenerateKitty(dna genetics.DNA) {
+func (i *Instance) GetAlleleRanges() genetics.AlleleRanges {
+	return i.lc.GetAlleleRanges()
+}
 
+func (i *Instance) GenerateKitty(dna genetics.DNA) (image.Image, error) {
+	return i.lc.GenerateKitty(dna)
 }

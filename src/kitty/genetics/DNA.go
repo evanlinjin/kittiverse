@@ -6,27 +6,29 @@ import "encoding/hex"
 type DNAPos int
 
 func (p DNAPos) String() string {
-	return dnaStringArray[p]
+	return string(dnaStringArray[p])
 }
+
+type DNAPosString string
 
 const (
 	DNAVersionPos     DNAPos = iota
-	DNABreedPos              = iota*6 - 5
-	DNABodyAttrPos           = iota*6 - 5
-	DNABodyColorAPos         = iota*6 - 5
-	DNABodyColorBPos         = iota*6 - 5
-	DNABodyPatternPos        = iota*6 - 5
-	DNAEarsAttrPos           = iota*6 - 5
-	DNAEyesAttrPos           = iota*6 - 5
-	DNAEyesColorPos          = iota*6 - 5
-	DNANoseAttrPos           = iota*6 - 5
-	DNATailAttrPos           = iota*6 - 5
-	DNAReservedAPos          = iota*6 - 5
-	DNAReservedBPos          = iota*6 - 5
-	DNALen int               = iota*6 - 5
+	DNABreedPos       DNAPos = iota*6 - 5
+	DNABodyAttrPos    DNAPos = iota*6 - 5
+	DNABodyColorAPos  DNAPos = iota*6 - 5
+	DNABodyColorBPos  DNAPos = iota*6 - 5
+	DNABodyPatternPos DNAPos = iota*6 - 5
+	DNAEarsAttrPos    DNAPos = iota*6 - 5
+	DNAEyesAttrPos    DNAPos = iota*6 - 5
+	DNAEyesColorPos   DNAPos = iota*6 - 5
+	DNANoseAttrPos    DNAPos = iota*6 - 5
+	DNATailAttrPos    DNAPos = iota*6 - 5
+	DNAReservedAPos   DNAPos = iota*6 - 5
+	DNAReservedBPos   DNAPos = iota*6 - 5
+	DNALen            int    = iota*6 - 5
 )
 
-var dnaStringArray = [...]string{
+var dnaStringArray = [...]DNAPosString{
 	DNAVersionPos:     "version",
 	DNABreedPos:       "breed",
 	DNABodyAttrPos:    "body",
@@ -40,6 +42,19 @@ var dnaStringArray = [...]string{
 	DNATailAttrPos:    "tail",
 	DNAReservedAPos:   "",
 	DNAReservedBPos:   "",
+}
+
+var dnaPosArray = [...]DNAPos{
+	DNABreedPos,
+	DNABodyAttrPos,
+	DNABodyColorAPos,
+	DNABodyColorBPos,
+	DNABodyPatternPos,
+	DNAEarsAttrPos,
+	DNAEyesAttrPos,
+	DNAEyesColorPos,
+	DNANoseAttrPos,
+	DNATailAttrPos,
 }
 
 // DNA represents a kitty's DNA and contains the genotypes of the kitty.
