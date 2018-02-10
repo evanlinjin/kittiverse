@@ -58,6 +58,7 @@ func (lc *Layers) Import(raw []byte) error {
 	lc.layerTypesByName = make(map[string]int)
 	for i, v := range lc.LayerTypes {
 		lc.layerTypesByName[v.OfType] = i
+		lc.LayerTypes[i].Init()
 	}
 	lc.breedsByName = make(map[string]int)
 	for i, v := range lc.Breeds {
