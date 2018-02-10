@@ -75,16 +75,20 @@ var dnaPosArray = [...]DNAPos{
 //		[(67,68),(69,70),(71,72)] (Reserved B).
 type DNA [DNALen]byte
 
-func (d DNA) ToHex() string {
-	return hex.EncodeToString(d[:])
-}
-
-func (d DNA) FromHex(hs string) error {
+func NewDNAFromHex(hs string) (DNA, error) {
+	var dna DNA
 	h, e := hex.DecodeString(hs)
 	if e != nil {
-		return e
+		return dna, e
 	}
-	return d.Set(h)
+	if e := dna.Set(h); e != nil {
+		return dna, e
+	}
+	return dna, nil
+}
+
+func (d DNA) Hex() string {
+	return hex.EncodeToString(d[:])
 }
 
 func (d *DNA) Set(b []byte) error {
@@ -114,6 +118,6 @@ func (d DNA) GetGenotype(pos DNAPos) Genotype {
 }
 
 func (d DNA) GetPhenotype(pos DNAPos) (a Allele) {
-	copy(a[:], d[pos+4:pos+AlleleLen])
+	copy(a[:], d[pos+4:pos+4+AlleleLen])
 	return
 }

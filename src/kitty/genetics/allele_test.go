@@ -38,7 +38,7 @@ func TestGenome_ToUint16(t *testing.T) {
 		{Allele{1, 244}, 500},
 	}
 	for i, c := range cases {
-		if got := c.in.ToUint16(); got != c.exp {
+		if got := c.in.Uint16(); got != c.exp {
 			t.Error(tPrint(i, c.in, c.exp, got))
 		} else {
 			t.Log(tPrint(i, c.in, c.exp, got))

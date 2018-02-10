@@ -33,16 +33,16 @@ func NewAlleleFromHex(hs string) (Allele, error) {
 	return a, e
 }
 
-func (a Allele) ToUint16() uint16 {
+func (a Allele) Uint16() uint16 {
 	return uint16(256*int(a[0]) + int(a[1]))
 }
 
-func (a Allele) ToHex() string {
+func (a Allele) Hex() string {
 	return hex.EncodeToString(a[:])
 }
 
 func (a Allele) String() string {
-	return a.ToHex()
+	return a.Hex()
 }
 
 func (a *Allele) Set(b []byte) error {
@@ -75,7 +75,7 @@ type AlleleRange struct {
 func (r AlleleRange) GetRange() (uint16, uint16) {
 	min, _ := NewAlleleFromHex(r.Min)
 	max, _ := NewAlleleFromHex(r.Max)
-	return min.ToUint16(), max.ToUint16()
+	return min.Uint16(), max.Uint16()
 }
 
 func (r AlleleRange) GetRandom() Allele {

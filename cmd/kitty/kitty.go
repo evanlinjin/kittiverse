@@ -13,6 +13,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"github.com/kittycash/kittiverse/src/kitty/genetics"
 )
 
 var app = cli.NewApp()
@@ -262,17 +263,68 @@ func init() {
 						if e := f.Close(); e != nil {
 							return e
 						}
-
 						f, e = os.Create(ctx.String("output"))
 						if e != nil {
 							return e
 						}
-						if n, e := f.WriteString(gen.GetAlleleRanges().RandomDNA().ToHex()); e != nil {
+						if n, e := f.WriteString(gen.GetAlleleRanges().RandomDNA().Hex()); e != nil {
 							return e
 						} else {
 							log.Printf("wrote '%d' bytes to '%s'", n, f.Name())
 						}
 						return nil
+					},
+				},
+				cli.Command{
+					Name: "image",
+					Usage: "generates a kitty image from DNA",
+					Flags: cli.FlagsByName{
+						cli.StringFlag{
+							Name: "dna, d",
+							Usage: "hex representation of DNA",
+							Value: genetics.DNA{}.Hex(),
+						},
+						cli.StringFlag{
+							Name: "file, f",
+							Usage: "path of '.kcg' file to use",
+							Value: "file.kcg",
+						},
+						cli.StringFlag{
+							Name: "output, o",
+							Usage: "path of the output file of the kitty generated from DNA",
+							Value: "kitty.png",
+						},
+					},
+					Action: func(ctx *cli.Context) error {
+						gen := generator.NewInstance(
+							v0.NewImagesContainer(),
+							v0.NewLayersContainer(),
+						)
+						f, e := os.Open(ctx.String("file"))
+						if e != nil {
+							return e
+						}
+						s, _ := f.Stat()
+						if e := gen.Import(f, int(s.Size())); e != nil {
+							return e
+						}
+						if e := f.Close(); e != nil {
+							return e
+						}
+						f, e = os.Create(ctx.String("output"))
+						if e != nil {
+							return e
+						}
+						defer f.Close()
+						dna, e := genetics.NewDNAFromHex(ctx.String("dna"))
+						if e != nil {
+							return e
+						}
+						img, e := gen.GenerateKitty(dna)
+						if e != nil {
+							return e
+						}
+						return png.Encode(f, img)
 					},
 				},
 			},

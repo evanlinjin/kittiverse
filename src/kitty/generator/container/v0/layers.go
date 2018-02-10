@@ -244,7 +244,7 @@ func (lc *Layers) getLayerType(pos genetics.DNAPos) *LayersOfType {
 }
 
 func (lc *Layers) getBreed(a genetics.Allele) string {
-	return lc.Breeds[a.ToUint16()]
+	return lc.Breeds[a.Uint16()]
 }
 
 /*
@@ -377,7 +377,7 @@ func generateImage(c *imgInputCommon, dnaPos genetics.DNAPos, bg image.Image, ps
 	var (
 		allele    = c.dna.GetPhenotype(dnaPos)
 		lt        = c.lc.getLayerType(dnaPos)
-		attribute = lt.Attributes[allele.ToUint16()]
+		attribute = lt.Attributes[allele.Uint16()]
 	)
 
 	layer, ok := lt.get(newAttributeKey(attribute, c.breed))
