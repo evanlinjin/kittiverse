@@ -95,6 +95,20 @@ func (d *DNA) Set(b []byte) error {
 	return nil
 }
 
+func (d *DNA) SetVersion(v byte) {
+	d[DNAVersionPos] = v
+}
+
+func (d *DNA) SetGenotype(pos DNAPos, a2, a1, a0 Allele) {
+	copy(d[pos+0:pos+2], a2[:])
+	copy(d[pos+2:pos+4], a1[:])
+	copy(d[pos+4:pos+6], a0[:])
+}
+
+func (d *DNA) SetRandomGenotype(pos DNAPos, ar AlleleRange) {
+	d.SetGenotype(pos, ar.GetRandom(), ar.GetRandom(), ar.GetRandom())
+}
+
 func (d DNA) GetGenotype(pos DNAPos) Genotype {
 	return d[pos : pos+GenotypeLen]
 }

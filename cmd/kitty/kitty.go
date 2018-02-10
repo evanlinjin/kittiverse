@@ -227,6 +227,56 @@ func init() {
 				},
 			},
 		},
+		cli.Command{
+			Name: "dna",
+			Usage: "tools for generating and managing kitty DNA",
+			Subcommands: cli.Commands{
+				cli.Command{
+					Name: "random",
+					Usage: "generates a random DNA",
+					Flags: cli.FlagsByName{
+						cli.StringFlag{
+							Name: "file, f",
+							Usage: "path of '.kcg' file to use",
+							Value: "file.kcg",
+						},
+						cli.StringFlag{
+							Name:  "output, o",
+							Usage: "path of output file to have randomly generated DNA",
+							Value: "random_kitty.dna",
+						},
+					},
+					Action: func(ctx *cli.Context) error {
+						gen := generator.NewInstance(
+							v0.NewImagesContainer(),
+							v0.NewLayersContainer(),
+						)
+						f, e := os.Open(ctx.String("file"))
+						if e != nil {
+							return e
+						}
+						s, _ := f.Stat()
+						if e := gen.Import(f, int(s.Size())); e != nil {
+							return e
+						}
+						if e := f.Close(); e != nil {
+							return e
+						}
+
+						f, e = os.Create(ctx.String("output"))
+						if e != nil {
+							return e
+						}
+						if n, e := f.WriteString(gen.GetAlleleRanges().RandomDNA().ToHex()); e != nil {
+							return e
+						} else {
+							log.Printf("wrote '%d' bytes to '%s'", n, f.Name())
+						}
+						return nil
+					},
+				},
+			},
+		},
 	}
 
 }

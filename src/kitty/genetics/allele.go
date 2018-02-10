@@ -4,6 +4,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"math/rand"
+	"time"
 )
 
 const (
@@ -11,6 +13,7 @@ const (
 )
 
 var (
+	gen = rand.New(rand.NewSource(time.Now().UnixNano()))
 	ErrInvalidHexLen = errors.New("invalid hex length")
 )
 
@@ -69,6 +72,19 @@ type AlleleRange struct {
 	Max string `json:"max"`
 }
 
+func (r AlleleRange) GetRange() (uint16, uint16) {
+	min, _ := NewAlleleFromHex(r.Min)
+	max, _ := NewAlleleFromHex(r.Max)
+	return min.ToUint16(), max.ToUint16()
+}
+
+func (r AlleleRange) GetRandom() Allele {
+	min, max := r.GetRange()
+	return NewAlleleFromUint16(
+		min + uint16(gen.Intn(int(max-min)+1)),
+	)
+}
+
 type AlleleRanges struct {
 	Breed         AlleleRange `json:"breed"`
 	BodyAttribute AlleleRange `json:"body_attribute"`
@@ -90,4 +106,22 @@ func (r *AlleleRanges) String(pretty bool) string {
 		data, _ := json.Marshal(r)
 		return string(data)
 	}
+}
+
+func (r *AlleleRanges) RandomDNA() DNA {
+	var dna DNA
+	dna.SetVersion(0)
+	dna.SetRandomGenotype(DNABreedPos, r.Breed)
+	dna.SetRandomGenotype(DNABodyAttrPos, r.BodyAttribute)
+	dna.SetRandomGenotype(DNABodyColorAPos, r.BodyColorA)
+	dna.SetRandomGenotype(DNABodyColorBPos, r.BodyColorB)
+	dna.SetRandomGenotype(DNABodyPatternPos, r.BodyPattern)
+	dna.SetRandomGenotype(DNAEarsAttrPos, r.EarsAttribute)
+	dna.SetRandomGenotype(DNAEyesAttrPos, r.EyesAttribute)
+	dna.SetRandomGenotype(DNAEyesColorPos, r.EyesColor)
+	dna.SetRandomGenotype(DNANoseAttrPos, r.NoseAttribute)
+	dna.SetRandomGenotype(DNATailAttrPos, r.TailAttribute)
+	dna.SetRandomGenotype(DNAReservedAPos, AlleleRange{Min: "0000", Max: "ffff"})
+	dna.SetRandomGenotype(DNAReservedBPos, AlleleRange{Min: "0000", Max: "ffff"})
+	return dna
 }

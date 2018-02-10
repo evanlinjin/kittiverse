@@ -140,6 +140,15 @@ func (lc *Layers) GenerateKitty(ic container.Images, dna genetics.DNA) (image.Im
 		common.DrawOutline(out, pt)
 	}
 
+	// Generate ears.
+	{
+		ears, e := generateImage(iic, genetics.DNAEarsAttrPos, fur)
+		if e != nil {
+			return nil, e
+		}
+		common.DrawOutline(out, ears)
+	}
+
 	// Generate tail.
 	{
 		tail, e := generateImage(iic, genetics.DNATailAttrPos, fur)
@@ -156,6 +165,29 @@ func (lc *Layers) GenerateKitty(ic container.Images, dna genetics.DNA) (image.Im
 			return nil, e
 		}
 		common.DrawOutline(out, body)
+	}
+
+	// Generate nose.
+	{
+		// TODO: Change to noseColor.
+		nose, e := generateImage(iic, genetics.DNANoseAttrPos, fur)
+		if e != nil {
+			return nil, e
+		}
+		common.DrawOutline(out, nose)
+	}
+
+	// Generate eyes.
+	{
+		bg, e := generateImage(iic, genetics.DNAEyesColorPos, nil)
+		if e != nil {
+			return nil, e
+		}
+		fg, e := generateImage(iic, genetics.DNAEyesAttrPos, bg)
+		if e != nil {
+			return nil, e
+		}
+		common.DrawOutline(out, fg)
 	}
 
 	return out, nil

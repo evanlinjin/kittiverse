@@ -60,5 +60,5 @@ func (i *Instance) GetAlleleRanges() *genetics.AlleleRanges {
 }
 
 func (i *Instance) GenerateKitty(dna genetics.DNA) (image.Image, error) {
-	return i.lc.GenerateKitty(dna)
+	return i.lc.GenerateKitty(i.ic, dna)
 }
