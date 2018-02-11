@@ -241,11 +241,6 @@ func init() {
 							Usage: "path of '.kcg' file to use",
 							Value: "file.kcg",
 						},
-						cli.StringFlag{
-							Name:  "output, o",
-							Usage: "path of output file to have randomly generated DNA",
-							Value: "random_kitty.dna",
-						},
 					},
 					Action: func(ctx *cli.Context) error {
 						gen := generator.NewInstance(
@@ -263,14 +258,15 @@ func init() {
 						if e := f.Close(); e != nil {
 							return e
 						}
-						f, e = os.Create(ctx.String("output"))
+						out, e := json.MarshalIndent(struct {
+							DNA string `json:"dna"`
+						}{
+							DNA: gen.GetAlleleRanges().RandomDNA().Hex(),
+						}, "", "    ")
 						if e != nil {
 							return e
-						}
-						if n, e := f.WriteString(gen.GetAlleleRanges().RandomDNA().Hex()); e != nil {
-							return e
 						} else {
-							log.Printf("wrote '%d' bytes to '%s'", n, f.Name())
+							log.Println(string(out))
 						}
 						return nil
 					},

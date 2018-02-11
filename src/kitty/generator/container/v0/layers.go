@@ -137,8 +137,8 @@ func (lc *Layers) GenerateKitty(ic container.Images, dna genetics.DNA) (image.Im
 		if e != nil {
 			return nil, e
 		}
-		common.DrawOutline(out, bg)
-		common.DrawOutline(out, pt)
+		common.DrawOutline(fur, bg)
+		common.DrawOutline(fur, pt)
 	}
 
 	// Generate ears.
