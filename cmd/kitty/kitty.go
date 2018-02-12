@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/kittycash/kittiverse/src/kitty/generator"
 	"github.com/kittycash/kittiverse/src/kitty/generator/container/v0"
+	"github.com/kittycash/kittiverse/src/kitty/genetics"
 	"github.com/kittycash/kittiverse/src/kitty/graphics"
 	"gopkg.in/urfave/cli.v1"
 	"image"
@@ -13,7 +14,6 @@ import (
 	"log"
 	"os"
 	"strings"
-	"github.com/kittycash/kittiverse/src/kitty/genetics"
 )
 
 var app = cli.NewApp()
@@ -229,15 +229,15 @@ func init() {
 			},
 		},
 		cli.Command{
-			Name: "dna",
+			Name:  "dna",
 			Usage: "tools for generating and managing kitty DNA",
 			Subcommands: cli.Commands{
 				cli.Command{
-					Name: "random",
+					Name:  "random",
 					Usage: "generates a random DNA",
 					Flags: cli.FlagsByName{
 						cli.StringFlag{
-							Name: "file, f",
+							Name:  "file, f",
 							Usage: "path of '.kcg' file to use",
 							Value: "file.kcg",
 						},
@@ -258,11 +258,8 @@ func init() {
 						if e := f.Close(); e != nil {
 							return e
 						}
-						out, e := json.MarshalIndent(struct {
-							DNA string `json:"dna"`
-						}{
-							DNA: gen.GetAlleleRanges().RandomDNA().Hex(),
-						}, "", "    ")
+						out, e := json.MarshalIndent(
+							gen.GetAlleleRanges().RandomDNA().Breakdown(), "", "    ")
 						if e != nil {
 							return e
 						} else {
@@ -272,21 +269,21 @@ func init() {
 					},
 				},
 				cli.Command{
-					Name: "image",
+					Name:  "image",
 					Usage: "generates a kitty image from DNA",
 					Flags: cli.FlagsByName{
 						cli.StringFlag{
-							Name: "dna, d",
+							Name:  "dna, d",
 							Usage: "hex representation of DNA",
 							Value: genetics.DNA{}.Hex(),
 						},
 						cli.StringFlag{
-							Name: "file, f",
+							Name:  "file, f",
 							Usage: "path of '.kcg' file to use",
 							Value: "file.kcg",
 						},
 						cli.StringFlag{
-							Name: "output, o",
+							Name:  "output, o",
 							Usage: "path of the output file of the kitty generated from DNA",
 							Value: "kitty.png",
 						},

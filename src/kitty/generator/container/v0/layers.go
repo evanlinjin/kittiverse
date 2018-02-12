@@ -1,18 +1,18 @@
 package v0
 
 import (
+	"errors"
 	"github.com/kittycash/kittiverse/src/kitty/generator/container"
 	"github.com/kittycash/kittiverse/src/kitty/generator/container/common"
 	"github.com/kittycash/kittiverse/src/kitty/genetics"
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"image"
+	"image/draw"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
-	"errors"
-	"image/draw"
 )
 
 const (
@@ -368,10 +368,10 @@ func getPartIndex(str string) int {
 }
 
 type imgInputCommon struct {
-	lc *Layers
-	ic container.Images
+	lc    *Layers
+	ic    container.Images
 	breed string
-	dna genetics.DNA
+	dna   genetics.DNA
 }
 
 func generateImage(c *imgInputCommon, dnaPos genetics.DNAPos, bg image.Image, ps ...int) (image.Image, error) {

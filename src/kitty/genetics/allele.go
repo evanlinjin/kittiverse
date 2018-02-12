@@ -13,7 +13,7 @@ const (
 )
 
 var (
-	gen = rand.New(rand.NewSource(time.Now().UnixNano()))
+	gen              = rand.New(rand.NewSource(time.Now().UnixNano()))
 	ErrInvalidHexLen = errors.New("invalid hex length")
 )
 

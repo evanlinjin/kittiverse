@@ -6,10 +6,10 @@ import (
 	"github.com/kittycash/kittiverse/src/kitty/generator/container"
 	"github.com/skycoin/skycoin/src/cipher"
 	"image"
+	"image/draw"
 	"image/png"
 	"io/ioutil"
 	"os"
-	"image/draw"
 )
 
 const (

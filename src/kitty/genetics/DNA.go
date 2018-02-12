@@ -121,3 +121,45 @@ func (d DNA) GetPhenotype(pos DNAPos) (a Allele) {
 	copy(a[:], d[pos+4:pos+4+AlleleLen])
 	return
 }
+
+type BreakdownSub struct{
+	Version string `json:"version"`
+	Breed   *GenotypeBreakdown `json:"breed"`
+	BodyAttribute  *GenotypeBreakdown `json:"body_attribute"`
+	BodyColorA     *GenotypeBreakdown `json:"body_color_a"`
+	BodyColorB     *GenotypeBreakdown `json:"body_color_b"`
+	BodyPattern    *GenotypeBreakdown `json:"body_pattern"`
+	EarsAttribute  *GenotypeBreakdown `json:"ears_attribute"`
+	EyesAttribute  *GenotypeBreakdown `json:"eyes_attribute"`
+	EyesColor      *GenotypeBreakdown `json:"eyes_color"`
+	NoseAttribute  *GenotypeBreakdown `json:"nose_attribute"`
+	TailAttribute  *GenotypeBreakdown `json:"tail_attribute"`
+	ReservedA      *GenotypeBreakdown `json:"reserved_a"`
+	ReservedB      *GenotypeBreakdown `json:"reserved_b"`
+}
+
+type DNABreakdown struct {
+	Hex string `json:"hex"`
+	Breakdown BreakdownSub `json:"breakdown"`
+}
+
+func (d DNA) Breakdown() *DNABreakdown {
+	return &DNABreakdown{
+		Hex: d.Hex(),
+		Breakdown: BreakdownSub{
+			Version: hex.EncodeToString(d.GetGenotype(DNAVersionPos)[:1]),
+			Breed: d.GetGenotype(DNABreedPos).Breakdown(),
+			BodyAttribute: d.GetGenotype(DNABodyAttrPos).Breakdown(),
+			BodyColorA: d.GetGenotype(DNABodyColorAPos).Breakdown(),
+			BodyColorB: d.GetGenotype(DNABodyColorBPos).Breakdown(),
+			BodyPattern: d.GetGenotype(DNABodyPatternPos).Breakdown(),
+			EarsAttribute: d.GetGenotype(DNAEarsAttrPos).Breakdown(),
+			EyesAttribute: d.GetGenotype(DNAEyesAttrPos).Breakdown(),
+			EyesColor: d.GetGenotype(DNAEyesColorPos).Breakdown(),
+			NoseAttribute: d.GetGenotype(DNANoseAttrPos).Breakdown(),
+			TailAttribute: d.GetGenotype(DNATailAttrPos).Breakdown(),
+			ReservedA: d.GetGenotype(DNAReservedAPos).Breakdown(),
+			ReservedB: d.GetGenotype(DNAReservedBPos).Breakdown(),
+		},
+	}
+}
